@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PLC Training: Ladder Logic Simulator</title>
+  <meta name="description" content="Browser-based ladder logic editor and PLC simulator driving a virtual conveyor factory." />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2322c55e'/%3E%3Cpath d='M6 6v20M26 6v20M6 16h6M20 16h6M12 9v14M20 9v14' stroke='%23fff' stroke-width='2.5'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">⏚</span>
+      <div>
+        <h1>PLC Training</h1>
+        <div class="subtitle">Ladder logic simulator &amp; virtual factory</div>
+      </div>
+    </div>
+    <div class="plc-controls" role="group" aria-label="PLC controls">
+      <span id="mode" class="mode stop">PROGRAM</span>
+      <button id="btn-run" class="btn run" title="Run continuous scans">▶ Run</button>
+      <button id="btn-stop" class="btn stopbtn" title="Stop scanning; outputs turn off">■ Stop</button>
+      <button id="btn-step" class="btn" title="Execute exactly one scan">⏭ Single Scan</button>
+      <button id="btn-reset-plc" class="btn ghost" title="Clear all tags, timers and counters">Reset PLC</button>
+      <span class="scaninfo">Scan <span id="scan-count">0</span> · <span id="scan-ms">50</span> ms</span>
+    </div>
+    <div class="file-controls">
+      <label class="examples">Examples
+        <select id="examples"></select>
+      </label>
+      <button id="btn-load-example" class="btn">Load</button>
+      <button id="btn-save" class="btn ghost" title="Save to this browser (localStorage)">Save</button>
+      <button id="btn-load" class="btn ghost" title="Load from this browser (localStorage)">Open</button>
+      <button id="btn-export" class="btn ghost" title="Download program as JSON">Export</button>
+      <button id="btn-import" class="btn ghost" title="Import a JSON program">Import</button>
+      <input id="file-import" type="file" accept="application/json,.json" hidden />
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="panel editor-panel">
+      <div class="panel-head">
+        <h2>Ladder program: <input id="program-name" class="program-name" aria-label="Program name" /></h2>
+      </div>
+      <div class="toolbar" role="toolbar" aria-label="Ladder editing">
+        <button data-op="rung" title="Add a new rung below the selected one">+ Rung</button>
+        <span class="sep"></span>
+        <button data-op="NO" title="Normally-open contact (XIC)"><b>] [</b> NO</button>
+        <button data-op="NC" title="Normally-closed contact (XIO)"><b>]/[</b> NC</button>
+        <button data-op="branch" title="Add a parallel branch around the selected contact">+ Branch</button>
+        <span class="sep"></span>
+        <button data-op="OTE" title="Output energize coil">( ) OTE</button>
+        <button data-op="OTL" title="Output latch">(L) OTL</button>
+        <button data-op="OTU" title="Output unlatch">(U) OTU</button>
+        <button data-op="TON" title="Timer on-delay">TON</button>
+        <button data-op="CTU" title="Count-up counter">CTU</button>
+        <button data-op="RES" title="Reset a timer/counter">RES</button>
+        <span class="sep"></span>
+        <button data-op="up" title="Move rung up">↑</button>
+        <button data-op="down" title="Move rung down">↓</button>
+        <button data-op="delete" class="danger" title="Delete selection (Del)">✕ Delete</button>
+      </div>
+      <div id="ladder" class="ladder-wrap" tabindex="0"></div>
+      <div id="inspector" class="inspector"></div>
+      <datalist id="tag-list"></datalist>
+    </section>
+
+    <section class="panel factory-panel">
+      <div class="panel-head">
+        <h2>Virtual factory</h2>
+        <div class="factory-opts">
+          <button id="btn-spawn" class="btn small">+ Box</button>
+          <button id="btn-spawn-tall" class="btn small">+ Tall box</button>
+          <label><input type="checkbox" id="auto-spawn" /> Auto infeed</label>
+          <button id="btn-clear" class="btn small ghost">Clear boxes</button>
+        </div>
+      </div>
+      <canvas id="factory" width="820" height="360" aria-label="Virtual factory conveyor"></canvas>
+      <div class="hint">Tip: click a box to pick it off the conveyor by hand.</div>
+      <div class="operator">
+        <div class="pb-group">
+          <button class="pb green" data-pb="START_PB">START</button>
+          <span>START_PB</span>
+        </div>
+        <div class="pb-group">
+          <button class="pb red" data-pb="STOP_PB">STOP</button>
+          <span>STOP_PB</span>
+        </div>
+        <div class="pb-group">
+          <button class="pb gray" data-pb="RESET_PB">RESET</button>
+          <span>RESET_PB</span>
+        </div>
+        <div class="pb-group">
+          <button id="estop" class="estop" aria-pressed="false">E-STOP</button>
+          <span>ESTOP (latching)</span>
+        </div>
+      </div>
+      <div class="io">
+        <h3>I/O &amp; tags</h3>
+        <div id="io-table" class="io-grid"></div>
+      </div>
+      <div id="example-desc" class="example-desc"></div>
+    </section>
+  </main>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
