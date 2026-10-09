@@ -7,8 +7,8 @@ export const OUTPUT_TAGS = ['MOTOR', 'DIVERTER', 'LIGHT_GREEN', 'LIGHT_AMBER', '
 export const TAG_INFO = {
   START_PB: 'Start pushbutton (ON while pressed)',
   STOP_PB: 'Stop pushbutton (ON while pressed, use an NC contact)',
-  ESTOP: 'Emergency stop (ON while latched in). Also hard-cuts motor & diverter power',
-  RESET_PB: 'Reset pushbutton (ON while pressed)',
+  ESTOP: 'Emergency stop (ON while latched in; release with RESET or the Release button). Also hard-cuts motor & diverter power',
+  RESET_PB: 'Reset pushbutton (ON while pressed). Also releases the E-stop latch',
   PE_ENTRY: 'Photo-eye at conveyor entry (ON when blocked)',
   PE_MID: 'Photo-eye mid conveyor (ON when blocked)',
   PE_TALL: 'Height photo-eye at the diverter, only sees TALL boxes',
@@ -43,6 +43,8 @@ export class Factory {
     this.boxes = [];
     this.outputs = {};
     this.buttons = { START_PB: false, STOP_PB: false, ESTOP: false, RESET_PB: false };
+    this.held = {};
+    this.unseen = {};
     this.pusher = 0;
     this.beltOffset = 0;
     this.delivered = 0;
@@ -52,6 +54,33 @@ export class Factory {
     this.spawnTimer = 0;
     this.tallChance = 0.35;
     this.nextId = 1;
+  }
+
+  /**
+   * Operator presses a momentary pushbutton. The input stays ON until at least one scan has
+   * read it (see consumeInputs), so a quick tap between scans is never missed.
+   */
+  press(tag) {
+    if (tag === 'ESTOP') { this.buttons.ESTOP = true; return; }
+    this.buttons[tag] = true;
+    this.held[tag] = true;
+    this.unseen[tag] = true;
+    if (tag === 'RESET_PB') this.buttons.ESTOP = false; // RESET also releases the E-stop latch
+  }
+
+  release(tag) {
+    this.held[tag] = false;
+    if (!this.unseen[tag]) this.buttons[tag] = false;
+  }
+
+  releaseEstop() { this.buttons.ESTOP = false; }
+
+  /** Call after a scan has read the inputs: drop momentary presses that were released. */
+  consumeInputs() {
+    for (const tag of Object.keys(this.unseen)) {
+      this.unseen[tag] = false;
+      if (!this.held[tag]) this.buttons[tag] = false;
+    }
   }
 
   get motorRunning() {
