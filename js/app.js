@@ -9,6 +9,7 @@ import { Controller } from './controller.js';
 import { Factory, TAG_INFO, W, H } from './factory.js';
 import { ALL_EXAMPLES, exampleProject } from './examples.js';
 import { LadderView, ops } from './editor.js';
+import { TourOverlay, Tour } from './tour.js';
 
 const SCAN_MS = 50;
 const KEY_PROJECT = 'plc-training:project';
@@ -600,7 +601,7 @@ function viewTags() {
     if (!basic) rows.push(...memberRows(tg.name, tg.type, 1));
   });
   body(h('table', { class: 'grid tags' },
-    h('tr', {}, h('th', {}, 'Name'), h('th', {}, 'Data type'), h('th', {}, 'Initial'), h('th', {}, 'Description'), h('th', {}, 'Live value'), h('th', {}, isCtrl ? 'Force' : 'Force (controller scope only)'), h('th', {})),
+    h('tr', {}, h('th', {}, 'Name'), h('th', {}, 'Data type'), h('th', {}, 'Initial'), h('th', {}, 'Description'), h('th', {}, 'Live value'), h('th', { id: 'force-col' }, isCtrl ? 'Force' : 'Force (controller scope only)'), h('th', {})),
     rows));
 }
 
@@ -1135,6 +1136,32 @@ $('#file-import').addEventListener('change', async (e) => {
   catch (err) { toast('Import failed: ' + err.message); }
 });
 
+// ------------------------------------------------------------------ guided tour
+function storageOrNull() { try { return window.localStorage; } catch { return null; } }
+let viewBeforeTour = null;
+const tour = new TourOverlay({
+  storage: storageOrNull(),
+  prepare: (step) => {
+    if (step.view === 'main') {
+      if (view.kind !== 'routine') {
+        const first = project.tasks.flatMap((t) => t.programs)[0];
+        if (first) setView({ kind: 'routine', program: first.name, routine: first.mainRoutine });
+      }
+    } else if (step.view && (view.kind !== step.view.kind || view.scope !== step.view.scope)) setView(step.view);
+  },
+  onEnd: (reason) => {
+    if (viewBeforeTour) setView(viewBeforeTour);
+    viewBeforeTour = null;
+    toast(reason === 'finished' ? 'Tour finished. Replay it any time with "? Tour".' : 'Tour skipped. Replay it any time with "? Tour".');
+  },
+});
+function startTour() {
+  if (tour.active) return;
+  viewBeforeTour = { ...view };
+  tour.start();
+}
+$('#btn-tour').onclick = startTour;
+
 // ------------------------------------------------------------------ boot
 (function boot() {
   let restored = false;
@@ -1154,8 +1181,9 @@ $('#file-import').addEventListener('change', async (e) => {
   if (!restored) loadExample('seal-in');
   refresh();
   requestAnimationFrame(frame);
+  if (Tour.shouldAutoStart(storageOrNull())) setTimeout(startTour, 300);
   window.__plc = {
     get project() { return project; }, controller, factory, loadExample, doDownload, doUpload, setView, refresh, addPen, commit,
-    get state() { return controller.state; }, get online() { return online; },
+    get state() { return controller.state; }, get online() { return online; }, tour,
   };
 })();

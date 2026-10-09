@@ -40,6 +40,28 @@ Two modules are configured: slot 1 is a `1756-IB16` 16-point DC input module and
 - **Taps:** a quick tap of a pushbutton is latched until at least one scan has read it, so taps between scans are never missed.
 - **E-STOP:** it hard-cuts motor and diverter power. Release it with **RESET**, the labelled **↻ Release E-STOP** button, or a second click.
 
+### Guided tour
+
+The first time you visit, a short guided tour starts. It highlights one part of the IDE at a time, dims the rest of the screen and shows a caption with **Back**, **Next** and **Skip** buttons (the last step shows **Finish**). If a step's target is in a view that isn't open, such as Tags, I/O, Cross Reference or Trend, the tour switches to that view first. When the tour ends it goes back to the view you were on.
+
+| # | Step | Highlights |
+|---|------|------------|
+| 1 | Project tree | the controller, tasks, programs, routines, UDTs and AOIs |
+| 2 | Ladder editor | the routine toolbar and the rungs |
+| 3 | Tags | the Controller Tags table |
+| 4 | I/O configuration | module, channel and tag mapping |
+| 5 | Run / Program / Single Scan | the controller mode buttons |
+| 6 | Virtual factory | the conveyor cell and the operator buttons |
+| 7 | Online and Download/Upload | Go Online, the online and sync badges, Download and Upload |
+| 8 | Cross reference | where each tag is used |
+| 9 | Forces | the Force column, Enable forces and the forces badge |
+| 10 | Trend | the trend chart and its pens |
+
+* Press <kbd>Esc</kbd> to skip, and use <kbd>←</kbd>/<kbd>→</kbd> to go back and forward. The highlight repositions when the window is resized or scrolled.
+* The tour stores `plc-training:tourDone` in localStorage when you finish or skip it, so it won't start again on its own. If you close the tab partway through, it shows again next time.
+* Click **? Tour** in the top bar to replay it at any time.
+* The tour is written in plain JS with no library. The step and flag logic in `js/tour.js` (`Tour`, `placeBubble`, …) doesn't touch the DOM, and `test/tour.test.js` unit-tests it.
+
 ### Examples (one click: load, download, go online)
 1. Start/Stop seal-in motor
 2. Conveyor stops at the end sensor

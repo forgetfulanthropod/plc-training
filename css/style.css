@@ -182,3 +182,18 @@ table.diff td { font-size: 11px; word-break: break-all; }
 ul.warnings { color: #fbbf24; font-size: 13px; padding-left: 18px; }
 .io-item.forced { outline: 2px solid #f59e0b; }
 #estop-state.warn { color: #f87171; font-weight: 700; }
+
+/* ---- guided tour ---- */
+.ctl-group { display: inline-flex; gap: 6px; align-items: center; }
+.tour-btn { border-color: var(--accent); color: #bae6fd; }
+.tour-root { position: fixed; inset: 0; z-index: 1000; }
+.tour-blocker { position: absolute; inset: 0; }
+.tour-root.no-target .tour-blocker { background: rgba(2, 6, 12, .62); }
+.tour-spot { position: fixed; border-radius: 8px; box-shadow: 0 0 0 9999px rgba(2, 6, 12, .62); outline: 2px solid var(--sel); pointer-events: none; transition: left .2s, top .2s, width .2s, height .2s; }
+.tour-bubble { position: fixed; width: min(360px, calc(100vw - 16px)); background: #111a2b; border: 1px solid var(--accent); border-radius: 10px; padding: 12px 14px; box-shadow: 0 10px 30px rgba(0,0,0,.5); outline: none; transition: left .2s, top .2s; }
+.tour-count { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; }
+.tour-title { margin: 4px 0 6px; font-size: 16px; color: #fff; text-transform: none; letter-spacing: 0; }
+.tour-text { margin: 0 0 12px; font-size: 13px; line-height: 1.5; color: var(--text); }
+.tour-actions { display: flex; gap: 6px; align-items: center; }
+.tour-gap { flex: 1; }
+@media (prefers-reduced-motion: reduce) { .tour-spot, .tour-bubble { transition: none; } }

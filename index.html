@@ -21,9 +21,11 @@
       <button id="btn-online" class="btn" title="Go online to see live values">Go Online</button>
       <span id="online-badge" class="badge offline">OFFLINE</span>
       <span id="mode" class="mode stop">PROGRAM</span>
+      <span id="run-controls" class="ctl-group">
       <button id="btn-run" class="btn run" title="Controller to RUN mode (continuous scans)">▶ Run</button>
       <button id="btn-stop" class="btn stopbtn" title="Controller to PROGRAM mode; outputs turn off">■ Program</button>
       <button id="btn-step" class="btn" title="Execute exactly one controller scan">⏭ Single Scan</button>
+      </span>
       <button id="btn-reset-ctrl" class="btn ghost" title="Reset Controller: clear all tag values, timers and counters back to their downloaded initial values">Reset Controller</button>
       <span class="sep"></span>
       <button id="btn-download" class="btn" title="Download: send the offline project to the controller">⬇ Download</button>
@@ -35,6 +37,7 @@
       <span class="scaninfo">Scan <span id="scan-count">0</span> · 50 ms</span>
     </div>
     <div class="file-controls">
+      <button id="btn-tour" class="btn tour-btn" title="Replay the guided tutorial">? Tour</button>
       <select id="examples" aria-label="Examples"></select>
       <button id="btn-load-example" class="btn">Load example</button>
       <button id="btn-new" class="btn ghost">New</button>
