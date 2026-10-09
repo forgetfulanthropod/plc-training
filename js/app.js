@@ -10,6 +10,7 @@ import { Factory, TAG_INFO, W, H } from './factory.js';
 import { ALL_EXAMPLES, exampleProject } from './examples.js';
 import { LadderView, ops } from './editor.js';
 import { TourOverlay, Tour } from './tour.js';
+import { MobileShell } from './mobile.js';
 
 const SCAN_MS = 50;
 const KEY_PROJECT = 'plc-training:project';
@@ -57,6 +58,7 @@ const factory = new Factory($('#factory'));
 let online = false;
 let stepped = false;
 let view = { kind: 'controller' };
+let mobile = null; // phone layout shell (js/mobile.js), created before boot
 let selection = null;
 let aoiInstance = '';
 const trend = { pens: [], data: {}, paused: false, window: 30 };
@@ -231,6 +233,7 @@ function updateStatus() {
 // ------------------------------------------------------------------ project tree
 function setView(v) {
   view = v;
+  if (mobile) mobile.onViewChange(v);
   selection = v.kind === 'routine' || v.kind === 'aoi' ? { r: v.rung ?? 0, kind: 'rung' } : null;
   if (v.kind === 'aoi') {
     const inst = project.controllerTags.find((t) => t.type === v.aoi);
@@ -338,6 +341,7 @@ function refresh() {
   if (isLadder) { renderLadder(); renderInspector(); }
   updateStatus();
   updateLive(true);
+  if (mobile) mobile.sync();
 }
 
 function resolveView() {
@@ -1062,6 +1066,7 @@ for (const b of document.querySelectorAll('[data-pb]')) {
   b.addEventListener('pointerup', up);
   b.addEventListener('pointerleave', up);
   b.addEventListener('pointercancel', up);
+  b.addEventListener('contextmenu', (e) => e.preventDefault()); // long-press = hold, not a context menu
   b.addEventListener('keydown', (e) => { if ((e.key === ' ' || e.key === 'Enter') && !e.repeat) down(e); });
   b.addEventListener('keyup', (e) => { if (e.key === ' ' || e.key === 'Enter') up(e); });
 }
@@ -1139,6 +1144,8 @@ $('#file-import').addEventListener('change', async (e) => {
 // ------------------------------------------------------------------ guided tour
 function storageOrNull() { try { return window.localStorage; } catch { return null; } }
 let viewBeforeTour = null;
+let panelBeforeTour = 'center';
+mobile = new MobileShell({ getView: () => view, setView: (v) => setView(v), getProject: () => project });
 const tour = new TourOverlay({
   storage: storageOrNull(),
   prepare: (step) => {
@@ -1148,16 +1155,19 @@ const tour = new TourOverlay({
         if (first) setView({ kind: 'routine', program: first.name, routine: first.mainRoutine });
       }
     } else if (step.view && (view.kind !== step.view.kind || view.scope !== step.view.scope)) setView(step.view);
+    if (mobile) mobile.prepareStep(step.mobile); // phone layout: open the drawer / menu / panel the step needs
   },
   onEnd: (reason) => {
     if (viewBeforeTour) setView(viewBeforeTour);
     viewBeforeTour = null;
+    if (mobile) { mobile.reset(); mobile.setPanel(panelBeforeTour); }
     toast(reason === 'finished' ? 'Tour finished. Replay it any time with "? Tour".' : 'Tour skipped. Replay it any time with "? Tour".');
   },
 });
 function startTour() {
   if (tour.active) return;
   viewBeforeTour = { ...view };
+  panelBeforeTour = mobile ? mobile.panel : 'center';
   tour.start();
 }
 $('#btn-tour').onclick = startTour;
@@ -1184,6 +1194,6 @@ $('#btn-tour').onclick = startTour;
   if (Tour.shouldAutoStart(storageOrNull())) setTimeout(startTour, 300);
   window.__plc = {
     get project() { return project; }, controller, factory, loadExample, doDownload, doUpload, setView, refresh, addPen, commit,
-    get state() { return controller.state; }, get online() { return online; }, tour,
+    get state() { return controller.state; }, get online() { return online; }, tour, get mobile() { return mobile; },
   };
 })();

@@ -62,6 +62,20 @@ The first time you visit, a short guided tour starts. It highlights one part of 
 * Click **? Tour** in the top bar to replay it at any time.
 * The tour is written in plain JS with no library. The step and flag logic in `js/tour.js` (`Tour`, `placeBubble`, …) doesn't touch the DOM, and `test/tour.test.js` unit-tests it.
 
+### Phones and touch screens
+
+At widths of 760 px or less (tested at 360–430 px) the IDE switches to a phone layout:
+
+* **Bottom tab bar:** ☰ Project · Ladder · Factory · Tags·IO · Trend. One main area is shown at a time. Ladder and Tags·IO go back to the routine or tag view you last used. Tags·IO has a Tags / I/O config switcher.
+* **Project drawer:** ☰ Project slides the project tree in from the left. Choosing an item opens it and closes the drawer.
+* **Compact top bar:** the mode badge, ▶ Run, ■ Program and ⏭ Single Scan, with the online, sync and forces badges below them. The other controller and file actions (Go Online, Download, Upload, Reset Controller, Enable forces, examples, New/Save/Open/Export/Import, ? Tour) are in the **⋯** overflow menu.
+* **Ladder editing by tapping:** tap a rung or instruction to select it, then tap a toolbar button to place the new element after it. There is no dragging or hovering. On touch, an element is selected on tap rather than on press, so you can swipe sideways through long rungs without selecting anything. The less common instructions are behind **⋯ More** in the toolbar.
+* **Factory:** the canvas scales to the screen width. The operator buttons work as press-and-hold: momentary buttons stay pressed while your finger is down, a long press doesn't open a context menu, and a quick tap still counts for at least one scan.
+* All touch targets are at least 44 px, inputs use 16 px text so iOS doesn't zoom on focus, and the page never scrolls horizontally. Wide tables and rungs scroll inside their own panels.
+* The guided tour opens the drawer, the overflow menu or the factory panel when a step needs it, so every step highlights something visible.
+
+The desktop layout is unchanged. The phone-only controls are moved into the menu when the phone layout is active and put back when it isn't, so resizing the window works both ways. The tab and view logic is in `js/mobile.js` and is tested in `test/mobile.test.js`.
+
 ### Examples (one click: load, download, go online)
 1. Start/Stop seal-in motor
 2. Conveyor stops at the end sensor

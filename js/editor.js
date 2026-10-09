@@ -254,9 +254,15 @@ export class LadderView {
   }
 
   hit(node, sel) {
+    // Mouse/pen select on press; touch selects on tap (click) so a swipe can scroll the rungs.
     node.addEventListener('pointerdown', (ev) => {
       ev.stopPropagation();
-      this.onSelect(sel);
+      LadderView.lastPointer = ev.pointerType;
+      if (ev.pointerType !== 'touch') this.onSelect(sel);
+    });
+    node.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      if (LadderView.lastPointer === 'touch') this.onSelect(sel);
     });
     if (selKey(sel) === selKey(this.sel)) node.classList.add('sel');
   }

@@ -10,43 +10,43 @@ export const TOUR_KEY = 'plc-training:tourDone';
  */
 export const TOUR_STEPS = [
   {
-    id: 'tree', title: 'Project tree', view: null, targets: ['.tree-panel'],
+    id: 'tree', title: 'Project tree', view: null, targets: ['.tree-panel'], mobile: { drawer: true },
     text: 'Your project is organised like a real controller: Controller → Tasks → Programs → Routines, plus tags, I/O configuration, user-defined data types and Add-On Instructions. Click any item to open it.',
   },
   {
-    id: 'ladder', title: 'Ladder editor & toolbar', view: 'main', targets: ['#ladder-area .toolbar', '#ladder'],
+    id: 'ladder', title: 'Ladder editor & toolbar', view: 'main', targets: ['#ladder-area .toolbar', '#ladder'], mobile: { panel: 'center' },
     text: 'Select a rung or instruction, then use the toolbar to add contacts (NO/NC), branches, compares, coils, timers, counters, math, JSR and AOI calls. The inspector below edits the selected instruction.',
   },
   {
-    id: 'tags', title: 'Tags', view: { kind: 'tags', scope: 'Controller' }, targets: ['table.grid.tags'],
+    id: 'tags', title: 'Tags', view: { kind: 'tags', scope: 'Controller' }, targets: ['table.grid.tags'], mobile: { panel: 'center' },
     text: 'The tag editor lists controller-scoped tags (switch the scope to see a program\'s own tags). Set data types (BOOL, INT, DINT, REAL, TIMER, COUNTER or a UDT), initial values and descriptions.',
   },
   {
-    id: 'io', title: 'I/O configuration', view: { kind: 'io' }, targets: ['#view-body table.grid'],
+    id: 'io', title: 'I/O configuration', view: { kind: 'io' }, targets: ['#view-body table.grid'], mobile: { panel: 'center' },
     text: 'Every field device in the virtual factory is wired to a module channel (e.g. Local:1:I.Data.0), and each channel maps to a tag. Inputs are copied in at the start of each scan, outputs copied out at the end.',
   },
   {
-    id: 'run', title: 'Run & Single Scan', view: null, targets: ['#run-controls'],
+    id: 'run', title: 'Run & Single Scan', view: null, targets: ['#run-controls'], mobile: {},
     text: 'Run scans the program continuously (every 50 ms); Program stops it and turns outputs off; Single Scan executes exactly one scan so you can step through logic. Reset Controller restores the initial tag values.',
   },
   {
-    id: 'factory', title: 'Virtual factory', view: null, targets: ['#factory', '.operator'],
+    id: 'factory', title: 'Virtual factory', view: null, targets: ['#factory', '.operator'], mobile: { panel: 'factory' },
     text: 'Your outputs drive this conveyor cell: motor, diverter and stack light. Photo-eyes and the START / STOP / RESET / E-STOP buttons are your inputs. Try loading an example, pressing Run, then START.',
   },
   {
-    id: 'online', title: 'Download & Go Online', view: 'main', targets: ['#btn-online', '#online-badge', '#btn-download', '#btn-upload', '#sync-badge'],
+    id: 'online', title: 'Download & Go Online', view: 'main', targets: ['#btn-online', '#online-badge', '#btn-download', '#btn-upload', '#sync-badge'], mobile: { panel: 'center', menu: true },
     text: 'You edit the offline project. Download sends it to the simulated controller; Upload pulls the running copy back. Go Online to see energized rungs and live values. The badge tells you whether offline and controller match.',
   },
   {
-    id: 'xref', title: 'Cross reference', view: { kind: 'xref' }, targets: ['.xref'],
+    id: 'xref', title: 'Cross reference', view: { kind: 'xref' }, targets: ['.xref'], mobile: { panel: 'center' },
     text: 'Find every place a tag is read or written, including I/O module mappings. Click a location to jump straight to that rung.',
   },
   {
-    id: 'force', title: 'Forces', view: { kind: 'tags', scope: 'Controller' }, targets: ['#force-col', '#btn-forces', '#forces-badge'],
+    id: 'force', title: 'Forces', view: { kind: 'tags', scope: 'Controller' }, targets: ['#force-col', '#btn-forces', '#forces-badge'], mobile: { panel: 'center' },
     text: 'Force a controller tag ON/OFF (or to a number) from the Force column, then Enable forces. Forces override the field and the logic, persist with the project, and a flashing FORCES ACTIVE badge warns you while they are in effect.',
   },
   {
-    id: 'trend', title: 'Trend', view: { kind: 'trend' }, targets: ['#trend-canvas', '.pens'],
+    id: 'trend', title: 'Trend', view: { kind: 'trend' }, targets: ['#trend-canvas', '.pens'], mobile: { panel: 'center' },
     text: 'Chart tags over time: add pens here or with the 📈 button in the tag editor. Samples are taken every controller scan. That\'s the tour — replay it any time with "? Tour".',
   },
 ];
@@ -214,12 +214,15 @@ export class TourOverlay {
     root.querySelector('.tour-next').addEventListener('click', () => this.tour.next());
     window.addEventListener('resize', this.reposition);
     window.addEventListener('scroll', this.reposition, true);
+    window.addEventListener('transitionend', this.reposition, true); // e.g. the phone drawer sliding in
     window.addEventListener('keydown', this.onKey, true);
   }
 
   teardown() {
     window.removeEventListener('resize', this.reposition);
     window.removeEventListener('scroll', this.reposition, true);
+    window.removeEventListener('transitionend', this.reposition, true);
+    clearTimeout(this.settle);
     window.removeEventListener('keydown', this.onKey, true);
     if (this.root) this.root.remove();
     this.root = null;
@@ -249,6 +252,8 @@ export class TourOverlay {
     next.textContent = i === n - 1 ? 'Finish' : 'Next';
     this.root.dataset.step = step.id;
     this.reposition();
+    clearTimeout(this.settle);
+    this.settle = setTimeout(this.reposition, 280); // after layout transitions settle
     next.focus({ preventScroll: true });
   }
 

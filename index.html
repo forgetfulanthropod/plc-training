@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b1018" />
   <title>PLC Training: Ladder Logic IDE &amp; Simulator</title>
   <meta name="description" content="Browser-based PLC IDE: tasks, programs, routines, tags, UDTs, AOIs, I/O configuration, online/offline, forces, trends and a virtual factory." />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2322c55e'/%3E%3Cpath d='M6 6v20M26 6v20M6 16h6M20 16h6M12 9v14M20 9v14' stroke='%23fff' stroke-width='2.5'/%3E%3C/svg%3E" />
@@ -22,11 +23,12 @@
       <span id="online-badge" class="badge offline">OFFLINE</span>
       <span id="mode" class="mode stop">PROGRAM</span>
       <span id="run-controls" class="ctl-group">
-      <button id="btn-run" class="btn run" title="Controller to RUN mode (continuous scans)">▶ Run</button>
-      <button id="btn-stop" class="btn stopbtn" title="Controller to PROGRAM mode; outputs turn off">■ Program</button>
-      <button id="btn-step" class="btn" title="Execute exactly one controller scan">⏭ Single Scan</button>
+      <button id="btn-run" class="btn run" title="Controller to RUN mode (continuous scans)" aria-label="Run">▶<span class="lbl"> Run</span></button>
+      <button id="btn-stop" class="btn stopbtn" title="Controller to PROGRAM mode; outputs turn off" aria-label="Program mode">■<span class="lbl"> Program</span></button>
+      <button id="btn-step" class="btn" title="Execute exactly one controller scan" aria-label="Single Scan">⏭<span class="lbl"> Single Scan</span></button>
       </span>
       <button id="btn-reset-ctrl" class="btn ghost" title="Reset Controller: clear all tag values, timers and counters back to their downloaded initial values">Reset Controller</button>
+      <span class="mbreak" aria-hidden="true"></span>
       <span class="sep"></span>
       <button id="btn-download" class="btn" title="Download: send the offline project to the controller">⬇ Download</button>
       <button id="btn-upload" class="btn" title="Upload: pull the controller's running copy (with current values) into the offline project">⬆ Upload</button>
@@ -47,7 +49,10 @@
       <button id="btn-import" class="btn ghost" title="Import a JSON project (v1 programs are migrated)">Import</button>
       <input id="file-import" type="file" accept="application/json,.json" hidden />
     </div>
+    <button id="btn-more" class="btn more-btn" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="more-menu" title="More actions">⋯<span class="sr"> More actions</span></button>
   </header>
+  <div id="more-menu" class="more-menu" aria-label="More actions"></div>
+  <div id="drawer-backdrop" class="drawer-backdrop"></div>
   <div id="banner" class="banner" hidden></div>
 
   <main class="ide">
@@ -56,6 +61,7 @@
     </nav>
 
     <section class="panel center">
+      <div class="mseg" role="group" aria-label="Tags or I/O"><button type="button" data-mview="tags">🏷 Tags</button><button type="button" data-mview="io">🔌 I/O config</button></div>
       <div id="view-head" class="view-head"></div>
       <div id="ladder-area" hidden>
         <div class="toolbar" role="toolbar" aria-label="Ladder editing">
@@ -64,23 +70,25 @@
           <button data-op="NO" title="Normally-open contact (XIC)"><b>] [</b> NO</button>
           <button data-op="NC" title="Normally-closed contact (XIO)"><b>]/[</b> NC</button>
           <button data-op="branch" title="Add a parallel branch around the selected contact">+ Branch</button>
-          <button data-op="CMP" title="Compare (EQU/NEQ/GRT/GEQ/LES/LEQ)">Compare</button>
+          <button data-op="CMP" class="tb-more" title="Compare (EQU/NEQ/GRT/GEQ/LES/LEQ)">Compare</button>
           <span class="sep"></span>
           <button data-op="OTE" title="Output energize coil">( ) OTE</button>
-          <button data-op="OTL" title="Output latch">(L) OTL</button>
-          <button data-op="OTU" title="Output unlatch">(U) OTU</button>
-          <button data-op="TON" title="Timer on-delay">TON</button>
-          <button data-op="CTU" title="Count-up counter">CTU</button>
-          <button data-op="RES" title="RES instruction: resets a timer or counter tag (not the controller)">RES (timer/counter reset)</button>
-          <button data-op="MOV" title="Move a value">MOV</button>
-          <button data-op="MATH" title="ADD / SUB / MUL / DIV">Math</button>
-          <button data-op="JSR" title="Jump to subroutine">JSR</button>
-          <button data-op="AOI" title="Call an Add-On Instruction">AOI</button>
+          <button data-op="OTL" class="tb-more" title="Output latch">(L) OTL</button>
+          <button data-op="OTU" class="tb-more" title="Output unlatch">(U) OTU</button>
+          <button data-op="TON" class="tb-more" title="Timer on-delay">TON</button>
+          <button data-op="CTU" class="tb-more" title="Count-up counter">CTU</button>
+          <button data-op="RES" class="tb-more" title="RES instruction: resets a timer or counter tag (not the controller)">RES (timer/counter reset)</button>
+          <button data-op="MOV" class="tb-more" title="Move a value">MOV</button>
+          <button data-op="MATH" class="tb-more" title="ADD / SUB / MUL / DIV">Math</button>
+          <button data-op="JSR" class="tb-more" title="Jump to subroutine">JSR</button>
+          <button data-op="AOI" class="tb-more" title="Call an Add-On Instruction">AOI</button>
           <span class="sep"></span>
-          <button data-op="up" title="Move rung up">↑</button>
-          <button data-op="down" title="Move rung down">↓</button>
+          <button data-op="up" class="tb-more" title="Move rung up">↑</button>
+          <button data-op="down" class="tb-more" title="Move rung down">↓</button>
           <button data-op="delete" class="danger" title="Delete selection (Del)">✕ Delete</button>
+          <button id="tb-more" class="tb-toggle" type="button" aria-label="More instructions">⋯ More</button>
         </div>
+        <div class="m-hint">Tap a rung or instruction to select it, then tap a toolbar button to place the new element after it. Swipe sideways to scroll long rungs.</div>
         <div id="ladder" class="ladder-wrap" tabindex="0"></div>
         <div id="inspector" class="inspector"></div>
       </div>
@@ -99,7 +107,7 @@
         </div>
       </div>
       <canvas id="factory" width="820" height="360" aria-label="Virtual factory conveyor"></canvas>
-      <div class="hint">Tip: click a box to pick it off the conveyor by hand. Field signals reach tags through the I/O configuration.</div>
+      <div class="hint">Tip: click or tap a box to pick it off the conveyor by hand. Field signals reach tags through the I/O configuration.</div>
       <div class="operator">
         <div class="pb-group"><button class="pb green" data-pb="START_PB">START</button><span>START_PB</span></div>
         <div class="pb-group"><button class="pb red" data-pb="STOP_PB">STOP</button><span>STOP_PB</span></div>
@@ -120,6 +128,7 @@
       <div id="example-desc" class="example-desc"></div>
     </section>
   </main>
+  <nav id="tabbar" class="tabbar" aria-label="Main areas"></nav>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <script type="module" src="js/app.js"></script>
 </body>
